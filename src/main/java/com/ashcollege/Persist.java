@@ -1,6 +1,7 @@
 package com.ashcollege;
 
 
+import com.ashcollege.entities.Team;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -33,6 +35,41 @@ public class Persist {
         return sessionFactory.getCurrentSession();
     }
 
+    public <T> void saveAll(List<T> objects) {
+        for (T object : objects) {
+            sessionFactory.getCurrentSession().saveOrUpdate(object);
+        }
+    }
+        public void save(Object object) {
+        this.sessionFactory.getCurrentSession().saveOrUpdate(object);
+    }
+
+    public <T> List<T> loadLeagues() {
+        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.League").list();
+
+    }
+
+    public <T> List<T> loadTeams() {
+        List<T> teams = this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Team").list();
+        for (T team: teams) {
+            ((Team)team).setPlayers(new ArrayList<>());
+            ((Team) team).setPlayers(loadPlayersFromTeam(((Team) team).getId()));
+        }
+        return teams;
+
+    }
+    public <T> List<T> loadMatchs() {
+        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Match").list();
+    }
+    public <T> List<T> loadPlayers() {
+        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Player").list();
+    }
+
+    public <T> List<T> loadPlayersFromTeam(int teamId) {
+        return this.sessionFactory.getCurrentSession().createQuery("FROM Player where team.id = :teamId")
+                .setParameter("teamId",teamId)
+                .list();
+    }
 //    public void save(Object object) {
 //        this.sessionFactory.getCurrentSession().saveOrUpdate(object);
 //    }
