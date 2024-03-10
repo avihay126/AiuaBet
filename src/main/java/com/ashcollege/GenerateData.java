@@ -34,7 +34,7 @@ public class GenerateData {
     }
 
     public List<League> generateLeagues(){
-        List<League> leagues = persist.loadLeagues();
+        List<League> leagues = persist.loadList(League.class);
         if (leagues.size() == 0){
             League league = new League("la liga");
             leagues.add(league);
@@ -44,7 +44,7 @@ public class GenerateData {
     }
 
     public List<Team> generateTeams(){
-        List<Team> teams = persist.loadTeams();
+        List<Team> teams = persist.loadList(Team.class);
         if (teams.size() == 0){
             List<League> leagues = generateLeagues();
             String[] teamsArray = {
@@ -64,7 +64,7 @@ public class GenerateData {
     }
 
     public List<Player> generatePlayers(){
-        List<Player> players = persist.loadPlayers();
+        List<Player> players = persist.loadList(Player.class);
         List<Team> teams = generateTeams();
         if (players.size() == 0){
             players = new ArrayList<>();
@@ -85,7 +85,7 @@ public class GenerateData {
 
 
     public List<Match> generateSchedule() {
-        List<Match> matches = persist.loadMatchs();
+        List<Match> matches = persist.loadList(Match.class);
         List<Team> teams = generateTeams();
         if (matches.size() == 0){
             List<Team> teamsCopy = new ArrayList<>(teams);

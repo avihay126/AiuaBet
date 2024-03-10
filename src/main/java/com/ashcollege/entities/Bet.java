@@ -1,6 +1,6 @@
 package com.ashcollege.entities;
 
-public class Bet {
+public class Bet<T> {
 
     private int id;
     private User owner;

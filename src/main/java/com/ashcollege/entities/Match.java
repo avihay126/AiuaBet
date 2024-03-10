@@ -3,7 +3,7 @@ package com.ashcollege.entities;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Match {
+public class Match<T> {
 
     private int id;
     private Team homeTeam;

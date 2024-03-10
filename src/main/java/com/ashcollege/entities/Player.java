@@ -1,6 +1,6 @@
 package com.ashcollege.entities;
 
-public class Player {
+public class Player<T> {
 
     private int id;
     private String fullName;

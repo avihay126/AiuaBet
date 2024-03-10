@@ -2,10 +2,11 @@ package com.ashcollege.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class League {
+public class League<T> implements Serializable {
 
     private int id;
     private String name;

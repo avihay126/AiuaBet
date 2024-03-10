@@ -1,6 +1,6 @@
 package com.ashcollege.entities;
 
-public class Goal {
+public class Goal<T> {
 
     private int id;
     private boolean home;

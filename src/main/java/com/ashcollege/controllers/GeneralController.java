@@ -7,12 +7,15 @@ import com.ashcollege.entities.Player;
 import com.ashcollege.entities.User;
 import com.ashcollege.responses.BasicResponse;
 import com.ashcollege.responses.LoginResponse;
+import com.ashcollege.utils.Constants;
 import com.ashcollege.utils.DbUtils;
+import com.ashcollege.utils.Errors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 
 import static com.ashcollege.utils.Errors.*;
@@ -22,12 +25,10 @@ public class GeneralController {
 
     @Autowired
     private DbUtils dbUtils;
-
-    @Autowired
-    private GenerateData generator;
-
     @Autowired
     private Persist persist;
+
+
 
 
     @RequestMapping(value = "/", method = {RequestMethod.GET, RequestMethod.POST})
@@ -35,9 +36,26 @@ public class GeneralController {
         return "Hello From Server";
     }
 
-    @RequestMapping(value = "/gen-data", method = {RequestMethod.GET, RequestMethod.POST})
-    public void generateData () {
-        generator.generateAll();
+    @RequestMapping(value = "register", method = {RequestMethod.GET,RequestMethod.POST})
+    public BasicResponse register(String username, String email, String password){
+        BasicResponse response = null;
+        if (User.areInputsCorrect(username,email,password)){
+          List<User> users =persist.loadList(User.class);
+            for (User user: users) {
+                if (user.getUsername().equals(username) || user.getEmail().equals(email)){
+                    response = new BasicResponse(false, ERROR_SIGN_UP_USERNAME_TAKEN);
+                }
+            }
+            if (response == null){
+                response = new BasicResponse(true,0);
+                User user = new User(username,email,password);
+                persist.save(user);
+            }
+        }
+        if (response == null){
+            response = new BasicResponse(false, ERROR_SIGN_UP_WRONG_CREDS);
+        }
+        return response;
     }
 
 

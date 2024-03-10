@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -44,26 +45,37 @@ public class Persist {
         this.sessionFactory.getCurrentSession().saveOrUpdate(object);
     }
 
-    public <T> List<T> loadLeagues() {
-        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.League").list();
-
-    }
-
-    public <T> List<T> loadTeams() {
-        List<T> teams = this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Team").list();
-        for (T team: teams) {
-            ((Team)team).setPlayers(new ArrayList<>());
-            ((Team) team).setPlayers(loadPlayersFromTeam(((Team) team).getId()));
+    public <T> List<T> loadList(Class<T> clazz) {
+        try (Session session = this.getQuerySession()) {
+            String hql = "FROM " + clazz.getName();
+            return session.createQuery(hql, clazz).list();
         }
-        return teams;
+    }
 
-    }
-    public <T> List<T> loadMatchs() {
-        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Match").list();
-    }
-    public <T> List<T> loadPlayers() {
-        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Player").list();
-    }
+//    public <T> List<T> loadLeagues() {
+//        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.League").list();
+//
+//    }
+//    public <T> List<T> loadUsers() {
+//        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.User").list();
+//
+//    }
+//
+//    public <T> List<T> loadTeams() {
+//        List<T> teams = this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Team").list();
+//        for (T team: teams) {
+//            ((Team)team).setPlayers(new ArrayList<>());
+//            ((Team) team).setPlayers(loadPlayersFromTeam(((Team) team).getId()));
+//        }
+//        return teams;
+//
+//    }
+//    public <T> List<T> loadMatchs() {
+//        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Match").list();
+//    }
+//    public <T> List<T> loadPlayers() {
+//        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Player").list();
+//    }
 
     public <T> List<T> loadPlayersFromTeam(int teamId) {
         return this.sessionFactory.getCurrentSession().createQuery("FROM Player where team.id = :teamId")
@@ -78,12 +90,7 @@ public class Persist {
 //        return this.getQuerySession().get(clazz, oid);
 //    }
 //
-//    public <T> List<T> loadList(Class<T> clazz) {
-//        try (Session session = this.getQuerySession()) {
-//            String hql = "FROM " + clazz.getName();
-//            return session.createQuery(hql, clazz).list();
-//        }
-//    }
+
 
 
 }
