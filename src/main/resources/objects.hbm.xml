@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+
+    <!--example-->
+    <class name="com.ashcollege.entities.User" table="users" lazy="false">
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+        <property name="username" type="string" column="username"/>
+        <property name="email" type="string" column="email"/>
+        <property name="password" type="string" column="password"/>
+        <property name="secret" type="string" column="secret"/>
+        <property name="balance" type="double" column="balance"/>
+    </class>
+
+
+    <class name="com.ashcollege.entities.Player" table="players" lazy="false">
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+        <property name="fullName" type="string" column="fullName"/>
+        <many-to-one name="team" lazy="false" column="team_id" class="com.ashcollege.entities.Team"/>
+        <property name="injured" type="boolean" column="injured"/>
+    </class>
+
+
+    <class name="com.ashcollege.entities.Goal" table="goals" lazy="false">
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+        <many-to-one name="scorer" column="scorer_id" class="com.ashcollege.entities.Player"/>
+        <property name="home" type="boolean" column="is_home"/>
+        <property name="minute" type="int" column="minute"/>
+        <many-to-one name="match" column="match_id" class="com.ashcollege.entities.Match"/>
+    </class>
+
+    <class name="com.ashcollege.entities.BetsForm" table="bets_form" lazy="false">
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+        <many-to-one name="owner" column="owner_id" class="com.ashcollege.entities.User"/>
+        <property name="moneyBet" type="int" column="money_bet"/>
+    </class>
+
+
+    <class name="com.ashcollege.entities.Bet" table="bets" lazy="false">
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+        <many-to-one name="match" column="match_id" class="com.ashcollege.entities.Match"/>
+        <many-to-one name="betsForm" column="bets_form_id" class="com.ashcollege.entities.BetsForm"/>
+        <property name="userBet" type="int" column="user_bet"/>
+        <property name="ratio" type="double" column="ratio"/>
+    </class>
+
+    <class name="com.ashcollege.entities.Match" table="matches" lazy="false">
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+        <many-to-one name="homeTeam" column="homeTeam_id" class="com.ashcollege.entities.Team"/>
+        <many-to-one name="awayTeam" column="awayTeam_id" class="com.ashcollege.entities.Team"/>
+        <property name="round" type="int" column="round"/>
+        <property name="temperature" type="int" column="temperature"/>
+    </class>
+    <class name="com.ashcollege.entities.Team" table="teams" lazy="false">
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+        <property name="name" type="string" column="team_name"/>
+        <many-to-one name="league" column="league_id" class="com.ashcollege.entities.League"/>
+        <property name="rating" type="int" column="team_rating" />
+        <property name="morale" type="int" column="team_morale"/>
+    </class>
+    <class name="com.ashcollege.entities.TeamStatistics" table="teams_statistics" lazy="false">
+        <id name="teamId" type="int" column="team_id">
+            <generator class="native"/>
+        </id>
+        <property name="gamesPlayed" type="int" column="games_played"/>
+        <property name="goalsScored" type="int" column="goals_scored"/>
+        <property name="goalsConceded" type="int" column="goals_conceded"/>
+        <property name="wins" type="int" column="wins"/>
+        <property name="draws" type="int" column="draws"/>
+        <property name="losses" type="int" column="losses"/>
+        <property name="points" type="int" column="points"/>
+    </class>
+
+    <class name="com.ashcollege.entities.League" table="leagues" lazy="false">
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+        <property name="name" type="string" column="league_name"/>
+
+    </class>
+
+
+
+
+
+
+    <!--    example2-->
+    <!--    <many-to-one name="object" column="object_id"-->
+    <!--                 class="com.ashcollege.entities.OtherClass"/>-->
+
+
+</hibernate-mapping>
