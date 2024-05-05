@@ -40,15 +40,12 @@ public class GeneralController {
 
 
 
-
-
-
     @RequestMapping(value = "/", method = {RequestMethod.GET, RequestMethod.POST})
     public Object test () {
         return "Hello From Server";
     }
 
-    @RequestMapping(value = "test", method = {RequestMethod.GET})
+    @RequestMapping(value = "currentRound", method = {RequestMethod.GET})
     public Object check () {
         List<Match> matches = persist.loadRoundMatches(1);
         matches = generateResult.roundResult(matches);

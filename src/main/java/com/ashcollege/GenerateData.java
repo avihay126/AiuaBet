@@ -53,8 +53,8 @@ public class GenerateData {
             };
             Random random = new Random();
             for (String name:teamsArray) {
-                int rating = random.nextInt(30,90);
-                int morale = random.nextInt(1,10);
+                int rating = random.nextInt(15,100);
+                int morale = random.nextInt(1,20);
 
                 Team team = new Team(name,rating,morale, leagues.get(0));
                 persist.save(team.getTeamStatistics());
@@ -72,7 +72,7 @@ public class GenerateData {
             players = new ArrayList<>();
             for (Team team: teams) {
                 team.setPlayers(persist.loadPlayersFromTeam(team.getId()));
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < 11; i++) {
                     String fullName = faker.name().fullName();
                     Player player = new Player(fullName, team,false);
                     players.add(player);

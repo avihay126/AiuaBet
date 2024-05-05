@@ -22,6 +22,56 @@ public class TeamStatistics<T> {
         setPoints((this.wins*3) + this.draws);
     }
 
+    public double getAvgGoalsPerMatch(){
+        if (this.gamesPlayed==0){
+            return 0;
+        }
+        return (double) this.goalsScored / this.gamesPlayed;
+    }
+
+    public double getAvgConcededPerMatch(){
+        if (this.gamesPlayed==0){
+            return 0;
+        }
+        return (double) this.goalsConceded / this.gamesPlayed;
+    }
+
+    public void addMatch(){
+        this.gamesPlayed += 1;
+    }
+
+    public void addGoal(){
+        this.goalsScored += 1;
+    }
+
+    public void addConcededGoal(){
+        this.goalsConceded += 1;
+    }
+
+    public void addWin(){
+        this.wins += 1;
+    }
+
+    public void removeWin(){
+        this.wins -= 1;
+    }
+
+    public void addLose(){
+        this.losses += 1;
+    }
+
+    public void removeLose(){
+        this.losses -= 1;
+    }
+
+    public void addDraw(){
+        this.draws += 1;
+    }
+
+    public void removeDraw(){
+        this.draws -= 1;
+    }
+
 
     public int getTeamId() {
         return teamId;

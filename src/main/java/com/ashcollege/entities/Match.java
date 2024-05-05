@@ -43,6 +43,31 @@ public class Match<T> {
         this.goals.addAll(goals);
     }
 
+    public void addGoal(Goal goal){
+        this.goals.add(goal);
+    }
+
+    public List<Goal> getHomeGoals(){
+        List<Goal> goals = new ArrayList<>();
+        for (Goal goal: this.goals) {
+            if (goal.isHome()){
+                goals.add(goal);
+            }
+        }
+        return goals;
+    }
+
+    public List<Goal> getAwayGoals(){
+        List<Goal> goals = new ArrayList<>();
+        for (Goal goal: this.goals) {
+            if (!goal.isHome()){
+                goals.add(goal);
+            }
+        }
+        return goals;
+    }
+
+
     public int getTemperature() {
         return temperature;
     }

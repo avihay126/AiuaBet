@@ -3,6 +3,7 @@ package com.ashcollege.entities;
 import com.ashcollege.Persist;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,11 +47,39 @@ public class Team<T> {
     public int calcTeamScore(){
         int score = this.rating + this.morale;
         score -= calcNumOfInjuredPlayers()* 3;
-        score += this.teamStatistics.getDifference();
+        score += this.teamStatistics.getWins();
+        if(score<10){
+            score = 10;
+        }
+        if (score > 120){
+            score = 120;
+        }
 
 
         return score;
     }
+
+    public void win(){
+        this.morale +=3;
+        if (this.morale>20){
+            this.morale = 20;
+        }
+    }
+
+    public void lose(){
+        this.morale -=2;
+        if (this.morale<1){
+            this.morale = 1;
+        }
+    }
+
+    public void playersRecovery(){
+        for (Player player: this.players) {
+            player.setInjured(false);
+        }
+    }
+
+
 
     public int calcNumOfInjuredPlayers(){
         int injured = 0;

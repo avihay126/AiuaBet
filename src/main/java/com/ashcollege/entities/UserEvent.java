@@ -6,12 +6,11 @@ public class UserEvent {
 
 
     private SseEmitter sseEmitter;
-    private String secret;
 
 
-    public UserEvent(SseEmitter sseEmitter, String secret) {
+    public UserEvent(SseEmitter sseEmitter) {
         this.sseEmitter = sseEmitter;
-        this.secret = secret;
+
     }
 
 
@@ -23,13 +22,6 @@ public class UserEvent {
         this.sseEmitter = sseEmitter;
     }
 
-    public String getSecret() {
-        return secret;
-    }
-
-    public void setSecret(String secret) {
-        this.secret = secret;
-    }
 }
 
 

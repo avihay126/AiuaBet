@@ -1,9 +1,7 @@
 package com.ashcollege;
 
 
-import com.ashcollege.entities.Goal;
-import com.ashcollege.entities.Match;
-import com.ashcollege.entities.Team;
+import com.ashcollege.entities.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,14 +60,13 @@ public class Persist {
 //
 //    }
 //
-//    public <T> List<T> loadTeams() {
-//        List<T> teams = this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Team").list();
-//        for (T team: teams) {
-//            ((Team)team).setPlayers(new ArrayList<>());
-//            ((Team) team).setPlayers(loadPlayersFromTeam(((Team) team).getId()));
-//        }
-//        return teams;
-//    }
+    public List<Team> loadTeamsWithStatistics() {
+        List<Team> teams = this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Team").list();
+        for (Team team: teams) {
+            team.setTeamStatistics(loadTeamStatistics(team.getId()));
+        }
+        return teams;
+    }
 //    public <T> List<T> loadMatchs() {
 //        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Match").list();
 //    }
@@ -78,23 +75,89 @@ public class Persist {
 //    }
 
 
-    public <T> List<T> loadRoundMatches(int roundId) {
-        return this.sessionFactory.getCurrentSession().createQuery("FROM Match where round = :roundId")
-                .setParameter("roundId",roundId)
-                .list();
+    public void addMatchForAll(){
+        List<Team> teams = loadList(Team.class);
+        for (Team team:teams) {
+            TeamStatistics teamStatistics = loadTeamStatistics(team.getId());
+            teamStatistics.addMatch();
+            teamStatistics.addDraw();
+            updateTeamPoints(team);
+            save(teamStatistics);
+        }
+        saveAll(teams);
     }
 
-//    public <T> List<T> loadRoundGoals(int roundId) {
-//        List<Match> matches =  this.sessionFactory.getCurrentSession().createQuery("FROM Match where round = :roundId")
-//                .setParameter("roundId",roundId)
-//                .list();
-//        List<Goal> goals = new ArrayList<>();
-//        for (Match match: matches) {
-//            match.setGoals(loadMatchGoals(match.getId()));
-//            goals.addAll(loadMatchGoals(match.getId()));
-//        }
-//        return (List<T>) goals;
-//    }
+    public void addGoalForTeam(Team team){
+        TeamStatistics teamStatistics = loadTeamStatistics(team.getId());
+        teamStatistics.addGoal();
+        save(teamStatistics);
+    }
+
+    public void addConcededGoalForTeam(Team team){
+        TeamStatistics teamStatistics = loadTeamStatistics(team.getId());
+        teamStatistics.addConcededGoal();
+        save(teamStatistics);
+    }
+    public void addWinForTeam(Team team){
+        TeamStatistics teamStatistics = loadTeamStatistics(team.getId());
+        teamStatistics.addWin();
+        save(teamStatistics);
+    }
+    public void removeWinForTeam(Team team){
+        TeamStatistics teamStatistics = loadTeamStatistics(team.getId());
+        teamStatistics.removeWin();
+        save(teamStatistics);
+    }
+
+    public void addLoseForTeam(Team team){
+        TeamStatistics teamStatistics = loadTeamStatistics(team.getId());
+        teamStatistics.addLose();
+        save(teamStatistics);
+    }
+    public void removeLoseForTeam(Team team){
+        TeamStatistics teamStatistics = loadTeamStatistics(team.getId());
+        teamStatistics.removeLose();
+        save(teamStatistics);
+    }
+    public void addDrawForTeam(Team team){
+        TeamStatistics teamStatistics = loadTeamStatistics(team.getId());
+        teamStatistics.addDraw();
+        save(teamStatistics);
+    }
+    public void removeDrawForTeam(Team team){
+        TeamStatistics teamStatistics = loadTeamStatistics(team.getId());
+        teamStatistics.removeDraw();
+        save(teamStatistics);
+    }
+
+    public void updateTeamPoints(Team team){
+        TeamStatistics teamStatistics = loadTeamStatistics(team.getId());
+        teamStatistics.calcPoints();
+        save(teamStatistics);
+    }
+
+
+    public <T> List<T> loadRoundMatches(int roundId) {
+        List<T> rounds =  this.sessionFactory.getCurrentSession().createQuery("FROM Match where round = :roundId")
+                .setParameter("roundId",roundId)
+                .list();
+        for (T match:rounds) {
+            ((Match)match).setGoals(new ArrayList<>());
+        }
+        return rounds;
+    }
+
+    public <T> List<T> loadRoundGoals(int roundId) {
+        List<Match> matches =  this.sessionFactory.getCurrentSession().createQuery("FROM Match where round = :roundId")
+                .setParameter("roundId",roundId)
+                .list();
+        List<Goal> goals = new ArrayList<>();
+        for (Match match: matches) {
+
+            goals.addAll(loadMatchGoals(match.getId()));
+        }
+        return (List<T>) goals;
+    }
 
     public <T> List<T> loadMatchGoals(int matchId) {
         return this.sessionFactory.getCurrentSession().createQuery("FROM Goal where match.id = :matchId")
@@ -102,11 +165,13 @@ public class Persist {
                 .list();
     }
 
+
     public <T> List<T> loadPlayersFromTeam(int teamId) {
         return this.sessionFactory.getCurrentSession().createQuery("FROM Player where team.id = :teamId")
                 .setParameter("teamId",teamId)
                 .list();
     }
+
     public <T> T loadTeamStatistics(int teamId) {
         return (T) this.sessionFactory.getCurrentSession().createQuery("FROM TeamStatistics where teamId = :teamId")
                 .setParameter("teamId",teamId)
@@ -117,6 +182,11 @@ public class Persist {
                 .setParameter("secret",secret)
                 .uniqueResult();
     }
+    public <T> T loadUserByEmail(String email) {
+        return (T) this.sessionFactory.getCurrentSession().createQuery("FROM User where email = :email")
+                .setParameter("email",email)
+                .uniqueResult();
+    }
 //    public void save(Object object) {
 //        this.sessionFactory.getCurrentSession().saveOrUpdate(object);
 //    }
@@ -125,6 +195,14 @@ public class Persist {
 //        return this.getQuerySession().get(clazz, oid);
 //    }
 //
+
+    public Team loadTeamWithPlayers (int teamId) {
+        Team team = (Team) getQuerySession().createQuery("FROM Team WHERE id = :id ")
+                .setParameter("id", teamId)
+                .uniqueResult();
+        team.setPlayers(loadPlayersFromTeam(teamId));
+        return team;
+    }
 
 
 
