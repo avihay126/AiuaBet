@@ -3,10 +3,7 @@ package com.ashcollege.controllers;
 import com.ashcollege.GenerateData;
 import com.ashcollege.GenerateResult;
 import com.ashcollege.Persist;
-import com.ashcollege.entities.Match;
-import com.ashcollege.entities.Player;
-import com.ashcollege.entities.Team;
-import com.ashcollege.entities.User;
+import com.ashcollege.entities.*;
 import com.ashcollege.responses.BasicResponse;
 import com.ashcollege.responses.LoginResponse;
 import com.ashcollege.utils.Constants;
@@ -40,17 +37,14 @@ public class GeneralController {
 
 
 
-    @RequestMapping(value = "/", method = {RequestMethod.GET, RequestMethod.POST})
-    public Object test () {
-        return "Hello From Server";
-    }
-
-    @RequestMapping(value = "currentRound", method = {RequestMethod.GET})
-    public Object check () {
-        List<Match> matches = persist.loadRoundMatches(1);
-        matches = generateResult.roundResult(matches);
+    @RequestMapping(value = "/get-schedule", method = {RequestMethod.GET, RequestMethod.POST})
+    public List<Match> getSchedule(){
+        List<Match> matches = persist.loadList(Match.class);
+        for (Match match : matches) {
+            List<Goal> goals = persist.loadMatchGoals(match.getId());
+            match.setGoals(goals);
+        }
         return matches;
     }
-
 
 }

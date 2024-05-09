@@ -35,6 +35,7 @@ public class LiveController {
     private boolean inGame;
     private int loopTime;
     private int currentRound;
+    private int secondToAddOrDip;
     List<Match> matches = new ArrayList<>();
     List<Goal> currentRoundGoals = new ArrayList<>();
 
@@ -46,14 +47,14 @@ public class LiveController {
             while (currentRound<= 38){
                 try {
                     Thread.sleep(loopTime);
-                    time++;
+                    time += secondToAddOrDip;
                 }catch (Exception e){
                     e.printStackTrace();
                 }
                 if (this.time ==91 && this.inGame){
                     endRound();
                 }
-                if (this.time == 6 && !this.inGame){//לא לשכוח להחזיר ל31
+                if (this.time == 0 && !this.inGame){//לא לשכוח להחזיר ל31
                     startRound();
                 }
                 for (Goal goal:currentRoundGoals) {
@@ -100,6 +101,7 @@ public class LiveController {
             UserEvent user = users.get(i);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("time",this.time);
+            jsonObject.put("inGame",this.inGame);
             jsonObject.put("round",matches);
             List<Team> teams = persist.loadTeamsWithStatistics();
             jsonObject.put("teams", teams);
@@ -174,22 +176,26 @@ public class LiveController {
         currentRound = 1;
         matches= persist.loadRoundMatches(currentRound);
         currentRoundGoals = getRoundGoals(currentRound);
+        secondToAddOrDip = -1;
+        time = 60;
     }
     public void startRound(){
         this.time = 0;
         this.inGame = !this.inGame;
         loopTime = 100; //לא לשכוח להחזיר ל333
         persist.addMatchForAll();
+        secondToAddOrDip = 1;
     }
 
     public void endRound(){
-        this.time=0;
+        this.time=60;
         this.inGame = !this.inGame;
         checkWinner();
         loopTime = 1000;
         currentRound++;
         matches = persist.loadRoundMatches(currentRound);
         currentRoundGoals = getRoundGoals(currentRound);
+        secondToAddOrDip = -1;
     }
 
     public List<Match> generateCurrentRoundResults (int roundId) {
@@ -208,7 +214,7 @@ public class LiveController {
 
     @GetMapping(value = "start-streaming",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter createStreamingSession(){
-        SseEmitter sseEmitter= new SseEmitter((long)(20 * 60 * 1000));
+        SseEmitter sseEmitter= new SseEmitter((long)(30 * 60 * 1000));
             users.add(new UserEvent(sseEmitter));
         return sseEmitter;
     }
