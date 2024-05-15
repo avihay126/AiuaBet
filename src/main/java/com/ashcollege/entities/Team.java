@@ -47,7 +47,7 @@ public class Team<T> {
     public int calcTeamScore(){
         int score = this.rating + this.morale;
         score -= calcNumOfInjuredPlayers()* 3;
-        score += this.teamStatistics.getWins();
+        score += (this.teamStatistics.getWins()*2);
         if(score<10){
             score = 10;
         }

@@ -34,7 +34,7 @@ public class LiveController {
     private int time;
     private boolean inGame;
     private int loopTime;
-    private int currentRound;
+    public static int currentRound;
     private int secondToAddOrDip;
     List<Match> matches = new ArrayList<>();
     List<Goal> currentRoundGoals = new ArrayList<>();
@@ -214,7 +214,7 @@ public class LiveController {
 
     @GetMapping(value = "start-streaming",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter createStreamingSession(){
-        SseEmitter sseEmitter= new SseEmitter((long)(30 * 60 * 1000));
+        SseEmitter sseEmitter= new SseEmitter((long)(40 * 60 * 1000));
             users.add(new UserEvent(sseEmitter));
         return sseEmitter;
     }

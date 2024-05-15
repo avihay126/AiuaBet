@@ -136,6 +136,13 @@ public class Persist {
         save(teamStatistics);
     }
 
+    public List<Match> loadAllTeamMatches(int teamId) {
+        List<Match> matches =  this.sessionFactory.getCurrentSession().createQuery("FROM Match where homeTeam.id = :teamId or awayTeam.id =:teamId")
+                .setParameter("teamId",teamId)
+                .list();
+        return matches;
+    }
+
 
     public <T> List<T> loadRoundMatches(int roundId) {
         List<T> rounds =  this.sessionFactory.getCurrentSession().createQuery("FROM Match where round = :roundId")
@@ -166,7 +173,7 @@ public class Persist {
     }
 
 
-    public <T> List<T> loadPlayersFromTeam(int teamId) {
+    public List<Player> loadPlayersFromTeam(int teamId) {
         return this.sessionFactory.getCurrentSession().createQuery("FROM Player where team.id = :teamId")
                 .setParameter("teamId",teamId)
                 .list();
@@ -177,10 +184,12 @@ public class Persist {
                 .setParameter("teamId",teamId)
                 .uniqueResult();
     }
-    public <T> T loadUserBySecret(String secret) {
-        return (T) this.sessionFactory.getCurrentSession().createQuery("FROM User where secret = :secret")
+    public User loadUserBySecret(String secret) {
+        User user =(User) this.sessionFactory.getCurrentSession().createQuery("FROM User where secret = :secret")
                 .setParameter("secret",secret)
                 .uniqueResult();
+        user.setBets(new ArrayList<>());
+        return user;
     }
     public <T> T loadUserByEmail(String email) {
         return (T) this.sessionFactory.getCurrentSession().createQuery("FROM User where email = :email")

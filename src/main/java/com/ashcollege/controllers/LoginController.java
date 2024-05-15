@@ -44,7 +44,7 @@ public class LoginController {
             if (response == null){
                 User user = new User(username,email.toLowerCase(),password);
                 persist.save(user);
-                response = new LoginResponse(true,null,user.getId(),user.getSecret());
+                response = new LoginResponse(true,null,user);
 
             }
         }
@@ -62,7 +62,7 @@ public class LoginController {
             basicResponse = new BasicResponse(false, Errors.ERROR_NO_SUCH_USER);
         }else{
             if (password.equals(user.getPassword())){
-                basicResponse = new LoginResponse(true, null, user.getId(), user.getSecret());
+                basicResponse = new LoginResponse(true, null, user);
             }else {
                 basicResponse = new BasicResponse(false, Errors.ERROR_SIGN_IN_WRONG_PASSWORD);
             }
@@ -72,8 +72,8 @@ public class LoginController {
 
 
 
-    @GetMapping(value = "/login2")
-    public Object login2 (HttpServletRequest request) {
+    @RequestMapping(value = "login-by-secret",method = {RequestMethod.GET,RequestMethod.POST})
+    public User login2 (HttpServletRequest request) {
         String secret = getSecretFromCookie(request);
         User user = persist.loadUserBySecret(secret);
         return user;

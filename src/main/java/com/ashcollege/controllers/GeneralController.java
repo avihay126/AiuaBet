@@ -19,6 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.ashcollege.utils.Errors.*;
@@ -40,11 +41,33 @@ public class GeneralController {
     @RequestMapping(value = "/get-schedule", method = {RequestMethod.GET, RequestMethod.POST})
     public List<Match> getSchedule(){
         List<Match> matches = persist.loadList(Match.class);
+        matches = getMatchGoals(matches);
+        return matches;
+    }
+
+    public List<Match> getMatchGoals(List<Match> matches){
         for (Match match : matches) {
-            List<Goal> goals = persist.loadMatchGoals(match.getId());
-            match.setGoals(goals);
+            if (match.getRound() <LiveController.currentRound){
+                List<Goal> goals = persist.loadMatchGoals(match.getId());
+                match.setGoals(goals);
+            }else {
+                match.setGoals(new ArrayList<>());
+            }
         }
         return matches;
+    }
+
+    @RequestMapping(value = "/get-team-matches", method = {RequestMethod.GET, RequestMethod.POST})
+    public List<Match> getTeamMatches(int teamId){
+        List<Match> matches = persist.loadAllTeamMatches(teamId);
+        matches = getMatchGoals(matches);
+        return matches;
+    }
+
+    @RequestMapping(value = "/get-team-players", method = {RequestMethod.GET, RequestMethod.POST})
+    public List<Player> getTeamPlayers(int teamId){
+        List<Player> players = persist.loadPlayersFromTeam(teamId);
+        return players;
     }
 
 }
