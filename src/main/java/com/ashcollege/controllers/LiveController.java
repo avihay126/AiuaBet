@@ -2,20 +2,20 @@ package com.ashcollege.controllers;
 
 import com.ashcollege.GenerateResult;
 import com.ashcollege.Persist;
-import com.ashcollege.entities.Goal;
-import com.ashcollege.entities.Match;
-import com.ashcollege.entities.Team;
-import com.ashcollege.entities.UserEvent;
+import com.ashcollege.entities.*;
 import com.github.javafaker.Faker;
 import com.github.javafaker.Lorem;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -137,7 +137,7 @@ public class LiveController {
 
     public void checkWinner(){
         for (Match match: matches) {
-            int winner = winnerTeam(persist.loadMatchGoals(match.getId()));
+            int winner = match.winnerTeam();
             if (winner == 1){
                 match.getHomeTeam().win();
                 match.getAwayTeam().lose();
@@ -153,22 +153,7 @@ public class LiveController {
         }
     }
 
-    public int winnerTeam(List<Goal> goals){
-        int[] teamsGoals = new int[2];
-        for (Goal goal: goals) {
-            if (goal.isHome()){
-                teamsGoals[0]+=1;
-            }else {
-                teamsGoals[1]+=1;
-            }
-        }
-        if (teamsGoals[0]>teamsGoals[1]){
-            return 1;
-        }else if (teamsGoals[1]>teamsGoals[0]){
-            return 2;
-        }
-        return 0;
-    }
+
 
 
     public void startSeason(){
@@ -209,6 +194,27 @@ public class LiveController {
         List<Goal> goals = persist.loadRoundGoals(roundId);
         return goals;
     }
+
+    @RequestMapping(value = "get-bets-result",method = {RequestMethod.POST,RequestMethod.GET})
+    public User checkBetsResult(HttpServletRequest request){
+        String cookie = LoginController.getSecretFromCookie(request);
+        User user = null;
+        if (cookie !=null){
+            user = persist.loadUserBySecret(cookie);
+            ArrayList<BetsForm> betsForms = persist.loadFormsByUserAndRound(user.getId(),currentRound);
+            for (BetsForm form: betsForms) {
+                form.setBets(persist.loadBetsByForm(form.getId()));
+                if (form.winForm(persist)){
+                    user.wonABet(form.getMoneyBet(), form.getTotalRatio());
+                    persist.save(user);
+                }
+            }
+        }
+
+        return user;
+    }
+
+
 
 
 

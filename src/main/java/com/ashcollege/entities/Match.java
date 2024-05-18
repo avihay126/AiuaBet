@@ -115,4 +115,23 @@ public class Match<T> {
     public void setGoals(List<Goal> goals) {
         this.goals = goals;
     }
+
+
+
+    public int winnerTeam(){
+        int[] teamsGoals = new int[2];
+        for (Goal goal: this.goals) {
+            if (goal.isHome()){
+                teamsGoals[0]+=1;
+            }else {
+                teamsGoals[1]+=1;
+            }
+        }
+        if (teamsGoals[0]>teamsGoals[1]){
+            return 1;
+        }else if (teamsGoals[1]>teamsGoals[0]){
+            return 2;
+        }
+        return 0;
+    }
 }

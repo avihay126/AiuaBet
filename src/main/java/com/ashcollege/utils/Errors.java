@@ -7,4 +7,5 @@ public class Errors {
     public static final int ERROR_SIGN_UP_USERNAME_TAKEN = 4;
     public static final int ERROR_SIGN_UP_WRONG_CREDS = 5;
     public static final int ERROR_NO_SUCH_USER = 6;
+    public static final int NOT_ENOUGH_MONEY = 7;
 }

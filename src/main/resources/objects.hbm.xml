@@ -43,6 +43,7 @@
         </id>
         <many-to-one name="owner" column="owner_id" class="com.ashcollege.entities.User"/>
         <property name="moneyBet" type="int" column="money_bet"/>
+        <property name="round" type="int" column="round"/>
     </class>
 
 

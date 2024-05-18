@@ -1,29 +1,20 @@
 package com.ashcollege.controllers;
 
-import com.ashcollege.GenerateData;
 import com.ashcollege.GenerateResult;
 import com.ashcollege.Persist;
 import com.ashcollege.entities.*;
 import com.ashcollege.responses.BasicResponse;
-import com.ashcollege.responses.LoginResponse;
+import com.ashcollege.responses.UserResponse;
 import com.ashcollege.utils.Constants;
 import com.ashcollege.utils.DbUtils;
 import com.ashcollege.utils.Errors;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.web.bind.annotation.*;
+import org.yaml.snakeyaml.scanner.Constant;
 
-import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-
-import static com.ashcollege.utils.Errors.*;
-import static com.ashcollege.utils.Errors.ERROR_SIGN_UP_WRONG_CREDS;
 
 @RestController
 public class GeneralController {
@@ -69,5 +60,36 @@ public class GeneralController {
         List<Player> players = persist.loadPlayersFromTeam(teamId);
         return players;
     }
+
+    @RequestMapping(value = "/get-user-bet", method = {RequestMethod.GET, RequestMethod.POST})
+    public Object getUserBets(@RequestBody LinkedHashMap betForm){
+        User user = persist.loadUserBySecret((String) betForm.get("ownerSecret"));
+        int moneyBet =Integer.parseInt((String) betForm.get("moneyBet")) ;
+        BasicResponse basicResponse =null;
+        if (user.getBalance()>= moneyBet){
+            user.takeABet(moneyBet);
+            persist.save(user);
+            int round = (int) betForm.get("round");
+            BetsForm betsForm = new BetsForm(user,moneyBet,round);
+            persist.save(betsForm);
+            betsForm.setBets(new ArrayList<>());
+            ArrayList<LinkedHashMap> bets = (ArrayList<LinkedHashMap>) betForm.get("bets");
+            for (LinkedHashMap bet: bets) {
+                LinkedHashMap linkedMatch = (LinkedHashMap) bet.get("match");
+                Match match = persist.loadObject(Match.class,(int)linkedMatch.get("id"));
+                int userBet =(int) bet.get("userBet");
+                double ratio = Double.parseDouble((String) bet.get("ratio"));
+                Bet newBet = new Bet(betsForm,match,userBet,ratio);
+                persist.save(newBet);
+            }
+            basicResponse = new UserResponse(true,null,user);
+            return basicResponse;
+
+        }
+        basicResponse = new BasicResponse(false, Errors.NOT_ENOUGH_MONEY);
+
+        return basicResponse;
+    }
+
 
 }

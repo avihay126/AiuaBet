@@ -15,10 +15,11 @@ public class Bet<T> {
     public Bet() {
     }
 
-    public Bet(int id, BetsForm betsForm, Match match, double ratio) {
-        this.id = id;
+    public Bet(BetsForm betsForm, Match match, int userBet, double ratio) {
+
         this.betsForm = betsForm;
         this.match = match;
+        this.userBet=userBet;
         this.ratio = ratio;
     }
 

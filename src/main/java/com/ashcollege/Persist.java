@@ -200,10 +200,24 @@ public class Persist {
 //        this.sessionFactory.getCurrentSession().saveOrUpdate(object);
 //    }
 //
-//    public <T> T loadObject(Class<T> clazz, int oid) {
-//        return this.getQuerySession().get(clazz, oid);
-//    }
-//
+
+    public ArrayList<BetsForm> loadFormsByUserAndRound(int userId, int round){
+            return (ArrayList<BetsForm>) getQuerySession().createQuery("FROM BetsForm WHERE  owner.id = : userId AND round = :round")
+                    .setParameter("userId",userId)
+                    .setParameter("round", round)
+                    .list();
+    }
+
+    public ArrayList<Bet> loadBetsByForm(int formId){
+        return (ArrayList<Bet>) getQuerySession().createQuery("FROM Bet WHERE  betsForm.id = : formId ")
+                .setParameter("formId",formId)
+                .list();
+    }
+
+    public <T> T loadObject(Class<T> clazz, int oid) {
+        return this.getQuerySession().get(clazz, oid);
+    }
+
 
     public Team loadTeamWithPlayers (int teamId) {
         Team team = (Team) getQuerySession().createQuery("FROM Team WHERE id = :id ")
@@ -212,6 +226,8 @@ public class Persist {
         team.setPlayers(loadPlayersFromTeam(teamId));
         return team;
     }
+
+
 
 
 

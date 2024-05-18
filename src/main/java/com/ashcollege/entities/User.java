@@ -35,6 +35,14 @@ public class User<T> {
     public static boolean isCorrectUsername(String username) {
         return username.length() >= 5 && isFirstCharUppercase(username);
     }
+    public void takeABet(int moneyBet){
+        this.setBalance(this.balance-moneyBet);
+    }
+
+    public void wonABet(int moneyBet, float ratio){
+        this.setBalance(this.balance +  (moneyBet*ratio));
+    }
+
 
 
 
