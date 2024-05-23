@@ -19,7 +19,7 @@ public class Team<T> {
     private int morale;
     @JsonIgnore
     private League league;
-    @JsonIgnore
+
     private TeamStatistics teamStatistics;
 
 

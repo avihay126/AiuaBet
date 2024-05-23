@@ -14,6 +14,16 @@ public class TeamStatistics<T> {
     public TeamStatistics() {
     }
 
+    public TeamStatistics(int teamId, int gamesPlayed, int goalsScored, int goalsConceded, int wins, int draws, int losses, int points) {
+        this.teamId = teamId;
+        this.gamesPlayed = gamesPlayed;
+        this.goalsScored = goalsScored;
+        this.goalsConceded = goalsConceded;
+        this.wins = wins;
+        this.draws = draws;
+        this.losses = losses;
+        this.points = points;
+    }
 
     public int getDifference(){
         return this.goalsScored - this.goalsConceded;

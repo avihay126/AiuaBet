@@ -6,6 +6,7 @@ public class Goal<T> {
 
     private int id;
     private boolean home;
+    @JsonIgnore
     private Player scorer;
     private int minute;
     @JsonIgnore

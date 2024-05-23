@@ -91,5 +91,105 @@ public class GeneralController {
         return basicResponse;
     }
 
+    @RequestMapping(value = "/get-top-scorer", method = {RequestMethod.GET, RequestMethod.POST})
+    public List<Player> getTopScorer(){
+        List<Player> players = persist.loadPlayersWithGoals();
+        players.sort((p1, p2) -> {
+            int goalComparison = Integer.compare(p2.getGoals().size(), p1.getGoals().size());
+            if (goalComparison == 0) {
+                return p1.getFullName().compareTo(p2.getFullName());
+            } else {
+                return goalComparison;
+            }
+        });
+        List<Player> topScorer = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            if(i < players.size()){
+                topScorer.add(players.get(i));
+            }
+        }
+        return topScorer;
+    }
+
+
+    @RequestMapping(value = "/get-team-home-away", method = {RequestMethod.GET, RequestMethod.POST})
+    public Object getTeamMatchesByType(boolean home){
+        List<Team> teams = persist.loadList(Team.class);
+        for (Team team: teams) {
+            getStatByMatchesType(team,home);
+        }
+        return teams;
+    }
+
+    public static int getTeamGoals(Match match, boolean home){
+        int homeGoals = 0;
+        int awayGoals = 0;
+        for (int i = 0; i < match.getGoals().size(); i++) {
+            Goal goal =(Goal) match.getGoals().get(i);
+            if (goal.isHome()){
+                homeGoals+=1;
+            }else {
+                awayGoals+=1;
+            }
+        }
+        if (home){
+            return homeGoals;
+        }
+        return awayGoals;
+    }
+
+
+    public void getStatByMatchesType(Team team, boolean home){
+        int gamesPlayed = 0;
+        int goalsScored = 0;
+        int goalsConceded = 0;
+        int wins = 0;
+        int draws = 0;
+        int losses = 0;
+        List<Match> matches = null;
+        if (home){
+            matches = persist.loadHomeTeamMatches(team.getId());
+        }else {
+            matches = persist.loadAwayTeamMatches(team.getId());
+        }
+        for (Match match: matches) {
+            if (match.getRound()<LiveController.currentRound){
+                match.setGoals(persist.loadMatchGoals(match.getId()));
+                gamesPlayed+=1;
+                goalsScored += getTeamGoals(match,home);
+                goalsConceded += getTeamGoals(match,!home);
+                int result = match.winnerTeam();
+                switch (result){
+                    case 1:
+                        if (home){
+                            wins+=1;
+                        }else {
+                            losses+=1;
+                        }
+                        break;
+                    case 2:
+                        if (home){
+                            losses+=1;
+                        }else {
+                            wins+=1;
+                        }
+                        break;
+                    case 0:
+                        draws+=1;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        int points = (wins*3) + draws;
+        TeamStatistics teamStatistics = new TeamStatistics(team.getId(),gamesPlayed,goalsScored,goalsConceded,wins,draws,losses,points);
+        team.setTeamStatistics(teamStatistics);
+    }
+
+
+
+
+
 
 }

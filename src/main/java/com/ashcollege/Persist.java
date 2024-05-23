@@ -1,6 +1,7 @@
 package com.ashcollege;
 
 
+import com.ashcollege.controllers.LiveController;
 import com.ashcollege.entities.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -142,6 +143,18 @@ public class Persist {
                 .list();
         return matches;
     }
+    public List<Match> loadHomeTeamMatches(int teamId) {
+        List<Match> matches =  this.sessionFactory.getCurrentSession().createQuery("FROM Match where homeTeam.id = :teamId")
+                .setParameter("teamId",teamId)
+                .list();
+        return matches;
+    }
+    public List<Match> loadAwayTeamMatches(int teamId) {
+        List<Match> matches =  this.sessionFactory.getCurrentSession().createQuery("FROM Match where awayTeam.id =:teamId")
+                .setParameter("teamId",teamId)
+                .list();
+        return matches;
+    }
 
 
     public <T> List<T> loadRoundMatches(int roundId) {
@@ -212,6 +225,22 @@ public class Persist {
         return (ArrayList<Bet>) getQuerySession().createQuery("FROM Bet WHERE  betsForm.id = : formId ")
                 .setParameter("formId",formId)
                 .list();
+    }
+
+    public List<Player> loadPlayersWithGoals(){
+        List<Player> players = getQuerySession().createQuery("FROM Player").list();
+        for (Player player:players) {
+            player.setGoals(loadPlayerGoals(player.getId()));
+        }
+        return players;
+    }
+
+    public List<Goal> loadPlayerGoals(int playerId){
+        List<Goal> goals =  getQuerySession().createQuery("FROM Goal WHERE scorer.id =: playerId")
+                .setParameter("playerId",playerId)
+                .list();
+        goals.removeIf(goal -> goal.getMatch().getRound() >= LiveController.currentRound);
+        return goals;
     }
 
     public <T> T loadObject(Class<T> clazz, int oid) {

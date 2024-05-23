@@ -92,12 +92,25 @@ public class GenerateData {
         Random random = new Random();
         if (matches.size() == 0){
             List<Team> teamsCopy = new ArrayList<>(teams);
+            boolean flag = false;
             for (int i = 0; i < teams.size() - 1; i++) {
+                flag =!flag;
                 for (int j = 0; j < teams.size() / 2; j++) {
                     Team homeTeam = teamsCopy.get(j);
                     Team awayTeam = teamsCopy.get(teams.size() - 1 - j);
-                    Match match = new Match(homeTeam, awayTeam, i + 1, random.nextInt(45));
-                    Match match2 = new Match(awayTeam, homeTeam, i + teams.size(),random.nextInt(45));
+                    Match match = null;
+                    Match match2 = null;
+                    if(j % 2 == 0 && j != 0){
+                        match = new Match(homeTeam, awayTeam, i + 1, random.nextInt(45));
+                        match2 = new Match(awayTeam, homeTeam, i + teams.size(),random.nextInt(45));
+                    }else if(j == 0 && flag){
+                        match = new Match(homeTeam, awayTeam, i + 1, random.nextInt(45));
+                        match2 = new Match(awayTeam, homeTeam, i + teams.size(),random.nextInt(45));
+                    }else {
+                        match = new Match(awayTeam, homeTeam, i + 1, random.nextInt(45));
+                        match2 = new Match(homeTeam, awayTeam, i + teams.size(),random.nextInt(45));
+                    }
+
                     matches.add(match);
                     matches.add(match2);
                 }
