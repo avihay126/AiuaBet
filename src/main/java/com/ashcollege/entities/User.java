@@ -1,6 +1,7 @@
 package com.ashcollege.entities;
 
 import com.ashcollege.utils.Constants;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.javafaker.Faker;
 import org.yaml.snakeyaml.scanner.Constant;
 
@@ -13,10 +14,12 @@ public class User<T> {
     private int id;
     private String username;
     private String email;
+    @JsonIgnore
     private String password;
     private String secret;
     private double balance;
-    private List<Bet> bets;
+    @JsonIgnore
+    private List<BetsForm> betsForms;
 
     public User() {
 
@@ -28,8 +31,8 @@ public class User<T> {
         this.username =username;
         this.email = email;
         this.password = password;
-        this.balance = 0;
-        this.bets = new ArrayList<>();
+        this.balance = 200;
+        this.betsForms = new ArrayList<>();
     }
 
     public static boolean isCorrectUsername(String username) {
@@ -126,12 +129,12 @@ public class User<T> {
         this.balance = balance;
     }
 
-    public List<Bet> getBets() {
-        return bets;
+    public List<BetsForm> getBets() {
+        return betsForms;
     }
 
-    public void setBets(List<Bet> bets) {
-        this.bets = bets;
+    public void setBets(List<BetsForm> betsForms) {
+        this.betsForms = betsForms;
     }
 }
 

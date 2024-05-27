@@ -213,6 +213,12 @@ public class Persist {
 //        this.sessionFactory.getCurrentSession().saveOrUpdate(object);
 //    }
 //
+    public ArrayList<BetsForm> loadFormsByUser(int userId){
+        return (ArrayList<BetsForm>) getQuerySession().createQuery("FROM BetsForm WHERE  owner.id = : userId")
+                .setParameter("userId",userId)
+                .list();
+    }
+
 
     public ArrayList<BetsForm> loadFormsByUserAndRound(int userId, int round){
             return (ArrayList<BetsForm>) getQuerySession().createQuery("FROM BetsForm WHERE  owner.id = : userId AND round = :round")

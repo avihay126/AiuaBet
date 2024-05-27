@@ -1,12 +1,14 @@
 package com.ashcollege.entities;
 
 import com.ashcollege.Persist;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
 
 public class BetsForm<T> {
 
     private int id;
+
     private User owner;
     private List<Bet> bets;
     private int moneyBet;

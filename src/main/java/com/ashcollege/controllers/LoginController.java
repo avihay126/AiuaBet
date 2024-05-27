@@ -4,6 +4,7 @@ import com.ashcollege.Persist;
 import com.ashcollege.entities.User;
 import com.ashcollege.responses.BasicResponse;
 import com.ashcollege.responses.UserResponse;
+import com.ashcollege.utils.Constants;
 import com.ashcollege.utils.Errors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -66,6 +67,31 @@ public class LoginController {
             }
         }
         return basicResponse;
+    }
+
+
+    @RequestMapping(value = "update-user-details",method = {RequestMethod.GET,RequestMethod.POST})
+    public BasicResponse updateUserDetails(String username, String email, String newPassword, String currentPassword, HttpServletRequest request){
+        String secret = getSecretFromCookie(request);
+        User user = persist.loadUserBySecret(secret);
+        List<User> users = persist.loadList(User.class);
+        if (user.getPassword().equals(currentPassword)){
+            if (User.areInputsCorrect(username,email,newPassword)){
+                for (User u:users ) {
+                    if (u.getId()!= user.getId()){
+                        if (u.getUsername().equals(username)||u.getEmail().equals(email)){
+                            return new BasicResponse(false, ERROR_SIGN_UP_USERNAME_TAKEN);
+                        }
+                    }
+                }
+                user.setEmail(email);
+                user.setUsername(username);
+                user.setPassword(newPassword);
+                persist.save(user);
+                return new UserResponse(true,null,user);
+            }
+        }
+        return new BasicResponse(false, Errors.ERROR_SIGN_IN_PASSWORDS_DONT_MATCH);
     }
 
 

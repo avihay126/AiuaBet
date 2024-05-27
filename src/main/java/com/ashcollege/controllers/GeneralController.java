@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.yaml.snakeyaml.scanner.Constant;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,6 +27,74 @@ public class GeneralController {
 
     @Autowired
     private GenerateResult generateResult;
+
+
+    @RequestMapping(value = "deposit-user-balance", method = {RequestMethod.GET, RequestMethod.POST})
+    public User depositUserBalance(int balance, HttpServletRequest request){
+        String secret = LoginController.getSecretFromCookie(request);
+        User user = persist.loadUserBySecret(secret);
+        if (balance <10000 && balance >0){
+            user.setBalance(user.getBalance()+balance);
+            persist.save(user);
+        }
+        return user;
+    }
+
+    @RequestMapping(value = "withdraw-user-balance", method = {RequestMethod.GET, RequestMethod.POST})
+    public User withdrawUserBalance(int balance, HttpServletRequest request){
+        String secret = LoginController.getSecretFromCookie(request);
+        User user = persist.loadUserBySecret(secret);
+        if (balance <= user.getBalance()){
+            user.setBalance(user.getBalance()-balance);
+            persist.save(user);
+        }
+        return user;
+    }
+
+    @RequestMapping(value = "/get-user-bet-history-forms", method = {RequestMethod.GET, RequestMethod.POST})
+    public List<BetsForm> getUserBetsForms(HttpServletRequest request){
+        String secret = LoginController.getSecretFromCookie(request);
+        User user = persist.loadUserBySecret(secret);
+        List<BetsForm> betsForms = persist.loadFormsByUser(user.getId());
+        List<BetsForm> filterForms = new ArrayList<>();
+        for (BetsForm form: betsForms) {
+            if (form.getRound()<LiveController.currentRound){
+                filterForms.add(form);
+            }
+        }
+        initForm(filterForms);
+
+        return filterForms;
+    }
+
+    @RequestMapping(value = "/get-user-bet-current-forms", method = {RequestMethod.GET, RequestMethod.POST})
+    public List<BetsForm> getUserBetsCurrentForms(HttpServletRequest request){
+        String secret = LoginController.getSecretFromCookie(request);
+        User user = persist.loadUserBySecret(secret);
+        List<BetsForm> betsForms = persist.loadFormsByUser(user.getId());
+        List<BetsForm> filterForms = new ArrayList<>();
+        for (BetsForm form: betsForms) {
+            if (form.getRound()==LiveController.currentRound){
+                filterForms.add(form);
+            }
+        }
+        initForm(filterForms);
+
+        return filterForms;
+    }
+
+    public void initForm(List<BetsForm>filterForms){
+        for (BetsForm form: filterForms) {
+            form.setBets(persist.loadBetsByForm(form.getId()));
+            for (int i = 0; i < form.getBets().size(); i++) {
+                Bet bet = (Bet) form.getBets().get(i);
+                bet.getMatch().setGoals(new ArrayList<>());
+                if (LiveController.currentRound > form.getRound()){
+                    bet.getMatch().setGoals(persist.loadMatchGoals(bet.getMatch().getId()));
+                }
+            }
+        }
+    }
 
 
 
