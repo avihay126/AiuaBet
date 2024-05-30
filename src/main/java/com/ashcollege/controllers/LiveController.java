@@ -1,10 +1,7 @@
 package com.ashcollege.controllers;
 
-import com.ashcollege.GenerateResult;
-import com.ashcollege.Persist;
+import com.ashcollege.utils.*;
 import com.ashcollege.entities.*;
-import com.github.javafaker.Faker;
-import com.github.javafaker.Lorem;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -26,7 +23,13 @@ public class LiveController {
     private List<UserEvent> users = new ArrayList<>();
 
     @Autowired
+    private DbUtils dbUtils;
+
+    @Autowired
     private Persist persist;
+
+    @Autowired
+    private GenerateData generateData;
 
     @Autowired
     private GenerateResult generateResult;
@@ -42,19 +45,23 @@ public class LiveController {
 
     @PostConstruct
     public void init(){
+        runGameThread();
+    }
+
+    public void runGameThread(){
         startSeason();
         new Thread(()->{
-            while (currentRound<= 38){
+            while (currentRound<= Constants.FINAL_ROUND){
                 try {
                     Thread.sleep(loopTime);
                     time += secondToAddOrDip;
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-                if (this.time ==91 && this.inGame){
+                if (this.time == (Constants.MAX_MINUTES +1) && this.inGame){
                     endRound();
                 }
-                if (this.time == 0 && !this.inGame){//לא לשכוח להחזיר ל31
+                if (this.time == 0 && !this.inGame){
                     startRound();
                 }
                 for (Goal goal:currentRoundGoals) {
@@ -91,6 +98,23 @@ public class LiveController {
         }).start();
     }
 
+    public void endSeason(){
+
+    }
+
+    @RequestMapping(value = "restart",method = {RequestMethod.POST,RequestMethod.GET})
+    public void restartSeason(){
+        persist.deleteAll(Goal.class);
+        persist.deleteAll(TeamStatistics.class);
+        persist.deleteAll(Bet.class);
+        persist.deleteAll(BetsForm.class);
+        persist.deleteAll(Match.class);
+        persist.deleteAll(Player.class);
+        persist.deleteAll(Team.class);
+        generateData.generateAll();
+        runGameThread();
+    }
+
     public void updateUsersLive(){
         for (Match match:matches) {
             match.getHomeTeam().reInitTeam(persist);
@@ -105,6 +129,7 @@ public class LiveController {
             jsonObject.put("round",matches);
             List<Team> teams = persist.loadTeamsWithStatistics();
             jsonObject.put("teams", teams);
+            jsonObject.put("roundNumber", currentRound);
 
             try {
                 user.getSseEmitter().send(jsonObject.toString());
@@ -138,12 +163,12 @@ public class LiveController {
     public void checkWinner(){
         for (Match match: matches) {
             int winner = match.winnerTeam();
-            if (winner == 1){
+            if (winner == Constants.HOME_TEAM_WINS){
                 match.getHomeTeam().win();
                 match.getAwayTeam().lose();
                 persist.save(match.getHomeTeam());
                 persist.save(match.getAwayTeam());
-            }else if (winner==2){
+            }else if (winner== Constants.AWAY_TEAM_WINS){
                 match.getAwayTeam().win();
                 match.getHomeTeam().lose();
                 persist.save(match.getAwayTeam());
@@ -157,30 +182,30 @@ public class LiveController {
 
 
     public void startSeason(){
-        loopTime = 1000;
-        currentRound = 1;
+        loopTime = Constants.SPEED_BETWEEN_MATCHES;
+        currentRound = Constants.START_ROUND;
         matches= persist.loadRoundMatches(currentRound);
         currentRoundGoals = getRoundGoals(currentRound);
-        secondToAddOrDip = -1;
-        time = 60;
+        secondToAddOrDip = Constants.SECOND_TO_DIP;
+        time = Constants.ONE_MINUTE;
     }
     public void startRound(){
         this.time = 0;
         this.inGame = !this.inGame;
-        loopTime = 100; //לא לשכוח להחזיר ל333
+        loopTime = Constants.SPEED_IN_GAME;
         persist.addMatchForAll();
-        secondToAddOrDip = 1;
+        secondToAddOrDip = Constants.SECOND_TO_ADD ;
     }
 
     public void endRound(){
-        this.time=60;
+        this.time=Constants.ONE_MINUTE;
         this.inGame = !this.inGame;
         checkWinner();
-        loopTime = 1000;
+        loopTime = Constants.SPEED_BETWEEN_MATCHES;
         currentRound++;
         matches = persist.loadRoundMatches(currentRound);
         currentRoundGoals = getRoundGoals(currentRound);
-        secondToAddOrDip = -1;
+        secondToAddOrDip = Constants.SECOND_TO_DIP;
     }
 
     public List<Match> generateCurrentRoundResults (int roundId) {
@@ -220,7 +245,7 @@ public class LiveController {
 
     @GetMapping(value = "start-streaming",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter createStreamingSession(){
-        SseEmitter sseEmitter= new SseEmitter((long)(40 * 60 * 1000));
+        SseEmitter sseEmitter= new SseEmitter((long)(Constants.USER_MINUTES_TIME_CYCLE * 60 * 1000));
             users.add(new UserEvent(sseEmitter));
         return sseEmitter;
     }

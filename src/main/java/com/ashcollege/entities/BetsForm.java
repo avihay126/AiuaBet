@@ -1,7 +1,6 @@
 package com.ashcollege.entities;
 
-import com.ashcollege.Persist;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.ashcollege.utils.Persist;
 
 import java.util.List;
 

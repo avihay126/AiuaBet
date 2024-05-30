@@ -1,16 +1,11 @@
 package com.ashcollege.utils;
 
 
-import com.ashcollege.GenerateData;
-import com.ashcollege.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class DbUtils {

@@ -1,9 +1,10 @@
-package com.ashcollege;
+package com.ashcollege.utils;
 
 import com.ashcollege.entities.League;
 import com.ashcollege.entities.Match;
 import com.ashcollege.entities.Player;
 import com.ashcollege.entities.Team;
+import com.ashcollege.utils.Persist;
 import com.github.javafaker.Faker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,14 +48,11 @@ public class GenerateData {
         List<Team> teams = persist.loadList(Team.class);
         if (teams.size() == 0){
             List<League> leagues = generateLeagues();
-            String[] teamsArray = {
-                    "Real Madrid", "Girona", "Barcelona", "Atletico Madrid", "Athletic Bilbao", "Real Betis", "Real Sociedad", "Las Palmas",
-                    "Valencia", "Getafe", "Osasuna", "Alaves", "Villarreal", "Rayo Vallecano", "Sevilla", "Mallorca", "Celta Vigo", "Cadiz", "Granada", "Almeria"
-            };
+            String[] teamsArray = Constants.TEAM_NAMES;
             Random random = new Random();
             for (String name:teamsArray) {
-                int rating = random.nextInt(15,100);
-                int morale = random.nextInt(1,20);
+                int rating = random.nextInt(Constants.MIN_RATING,Constants.MAX_RATING);
+                int morale = random.nextInt(Constants.MIN_MORALE,Constants.MAX_MORALE);
 
                 Team team = new Team(name,rating,morale, leagues.get(0));
                 persist.save(team.getTeamStatistics());
@@ -72,7 +70,7 @@ public class GenerateData {
             players = new ArrayList<>();
             for (Team team: teams) {
                 team.setPlayers(persist.loadPlayersFromTeam(team.getId()));
-                for (int i = 0; i < 11; i++) {
+                for (int i = 0; i < Constants.PLAYERS_PER_TEAM; i++) {
                     String fullName = faker.name().fullName();
                     Player player = new Player(fullName, team,false);
                     players.add(player);
@@ -92,32 +90,31 @@ public class GenerateData {
         Random random = new Random();
         if (matches.size() == 0){
             List<Team> teamsCopy = new ArrayList<>(teams);
-            boolean flag = false;
+            boolean isEvenRound = false;
             for (int i = 0; i < teams.size() - 1; i++) {
-                flag =!flag;
+                isEvenRound =!isEvenRound;
                 for (int j = 0; j < teams.size() / 2; j++) {
                     Team homeTeam = teamsCopy.get(j);
                     Team awayTeam = teamsCopy.get(teams.size() - 1 - j);
-                    Match match = null;
-                    Match match2 = null;
-                    if(j % 2 == 0 && j != 0){
-                        match = new Match(homeTeam, awayTeam, i + 1, random.nextInt(45));
-                        match2 = new Match(awayTeam, homeTeam, i + teams.size(),random.nextInt(45));
-                    }else if(j == 0 && flag){
-                        match = new Match(homeTeam, awayTeam, i + 1, random.nextInt(45));
-                        match2 = new Match(awayTeam, homeTeam, i + teams.size(),random.nextInt(45));
+                    Match[] teamsMeeting = null;
+                    if((j % 2 == 0 && j != 0)||(j == 0 && isEvenRound)){
+                        teamsMeeting = createTeamsMeeting(homeTeam,awayTeam,i+1,random);
                     }else {
-                        match = new Match(awayTeam, homeTeam, i + 1, random.nextInt(45));
-                        match2 = new Match(homeTeam, awayTeam, i + teams.size(),random.nextInt(45));
+                        teamsMeeting = createTeamsMeeting(awayTeam,homeTeam,i+1,random);
                     }
-
-                    matches.add(match);
-                    matches.add(match2);
+                    matches.add(teamsMeeting[Constants.FIRST_TEAMS_MEETING]);
+                    matches.add(teamsMeeting[Constants.SECOND_TEAMS_MEETING]);
                 }
                 Collections.rotate(teamsCopy.subList(1, teamsCopy.size()), 1);
             }
         }
         persist.saveAll(matches);
         return matches;
+    }
+
+    private Match[] createTeamsMeeting(Team homeTeam,Team awayTeam,int round, Random random){
+        Match match = new Match(homeTeam,awayTeam,round,random.nextInt(Constants.MAX_TEMPERATURE));
+        Match match2 = new Match(awayTeam,homeTeam,round + Constants.TEAM_NAMES.length - 1,random.nextInt(Constants.MAX_TEMPERATURE));
+        return new Match[]{match,match2};
     }
 }

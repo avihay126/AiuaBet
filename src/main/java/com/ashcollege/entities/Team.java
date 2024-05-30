@@ -1,9 +1,9 @@
 package com.ashcollege.entities;
 
-import com.ashcollege.Persist;
+import com.ashcollege.utils.Constants;
+import com.ashcollege.utils.Persist;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,13 +46,13 @@ public class Team<T> {
 
     public int calcTeamScore(){
         int score = this.rating + this.morale;
-        score -= calcNumOfInjuredPlayers()* 3;
-        score += (this.teamStatistics.getWins()*2);
-        if(score<10){
-            score = 10;
+        score -= calcNumOfInjuredPlayers()* Constants.INJURY_PENALTY;
+        score += (this.teamStatistics.getWins()*Constants.WIN_BONUS);
+        if(score<Constants.MIN_SCORE){
+            score = Constants.MIN_SCORE;
         }
-        if (score > 120){
-            score = 120;
+        if (score > Constants.MAX_SCORE){
+            score = Constants.MAX_SCORE;
         }
 
 
@@ -60,16 +60,16 @@ public class Team<T> {
     }
 
     public void win(){
-        this.morale +=3;
-        if (this.morale>20){
-            this.morale = 20;
+        this.morale +=Constants.MORALE_WIN_INCREASE;
+        if (this.morale>Constants.MAX_MORALE){
+            this.morale = Constants.MAX_MORALE;
         }
     }
 
     public void lose(){
-        this.morale -=2;
-        if (this.morale<1){
-            this.morale = 1;
+        this.morale -=Constants.MORALE_LOSE_DECREASE;
+        if (this.morale<Constants.MIN_MORALE){
+            this.morale = Constants.MIN_MORALE;
         }
     }
 

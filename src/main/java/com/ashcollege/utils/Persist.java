@@ -1,4 +1,4 @@
-package com.ashcollege;
+package com.ashcollege.utils;
 
 
 import com.ashcollege.controllers.LiveController;
@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -53,14 +52,6 @@ public class Persist {
 
     }
 
-//    public <T> List<T> loadLeagues() {
-//        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.League").list();
-//    }
-//    public <T> List<T> loadUsers() {
-//        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.User").list();
-//
-//    }
-//
     public List<Team> loadTeamsWithStatistics() {
         List<Team> teams = this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Team").list();
         for (Team team: teams) {
@@ -68,12 +59,6 @@ public class Persist {
         }
         return teams;
     }
-//    public <T> List<T> loadMatchs() {
-//        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Match").list();
-//    }
-//    public <T> List<T> loadPlayers() {
-//        return this.sessionFactory.getCurrentSession().createQuery("FROM com.ashcollege.entities.Player").list();
-//    }
 
 
     public void addMatchForAll(){
@@ -209,10 +194,7 @@ public class Persist {
                 .setParameter("email",email)
                 .uniqueResult();
     }
-//    public void save(Object object) {
-//        this.sessionFactory.getCurrentSession().saveOrUpdate(object);
-//    }
-//
+
     public ArrayList<BetsForm> loadFormsByUser(int userId){
         return (ArrayList<BetsForm>) getQuerySession().createQuery("FROM BetsForm WHERE  owner.id = : userId")
                 .setParameter("userId",userId)
@@ -249,18 +231,17 @@ public class Persist {
         return goals;
     }
 
+    public <T> T deleteAll(Class<T> clazz){
+         getQuerySession().createQuery("DELETE FROM " +clazz.getName()).executeUpdate();
+         return null;
+    }
+
     public <T> T loadObject(Class<T> clazz, int oid) {
         return this.getQuerySession().get(clazz, oid);
     }
 
 
-    public Team loadTeamWithPlayers (int teamId) {
-        Team team = (Team) getQuerySession().createQuery("FROM Team WHERE id = :id ")
-                .setParameter("id", teamId)
-                .uniqueResult();
-        team.setPlayers(loadPlayersFromTeam(teamId));
-        return team;
-    }
+
 
 
 

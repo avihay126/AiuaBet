@@ -1,5 +1,7 @@
 package com.ashcollege.entities;
 
+import com.ashcollege.utils.Constants;
+
 public class TeamStatistics<T> {
 
     private int teamId;
@@ -29,7 +31,7 @@ public class TeamStatistics<T> {
         return this.goalsScored - this.goalsConceded;
     }
     public void calcPoints(){
-        setPoints((this.wins*3) + this.draws);
+        setPoints((this.wins* Constants.POINTS_BY_WIN) + this.draws);
     }
 
     public double getAvgGoalsPerMatch(){

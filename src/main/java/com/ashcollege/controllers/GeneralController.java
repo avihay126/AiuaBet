@@ -1,16 +1,11 @@
 package com.ashcollege.controllers;
 
-import com.ashcollege.GenerateResult;
-import com.ashcollege.Persist;
+import com.ashcollege.utils.*;
 import com.ashcollege.entities.*;
 import com.ashcollege.responses.BasicResponse;
 import com.ashcollege.responses.UserResponse;
-import com.ashcollege.utils.Constants;
-import com.ashcollege.utils.DbUtils;
-import com.ashcollege.utils.Errors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.yaml.snakeyaml.scanner.Constant;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -20,81 +15,9 @@ import java.util.List;
 @RestController
 public class GeneralController {
 
-    @Autowired
-    private DbUtils dbUtils;
+
     @Autowired
     private Persist persist;
-
-    @Autowired
-    private GenerateResult generateResult;
-
-
-    @RequestMapping(value = "deposit-user-balance", method = {RequestMethod.GET, RequestMethod.POST})
-    public User depositUserBalance(int balance, HttpServletRequest request){
-        String secret = LoginController.getSecretFromCookie(request);
-        User user = persist.loadUserBySecret(secret);
-        if (balance <10000 && balance >0){
-            user.setBalance(user.getBalance()+balance);
-            persist.save(user);
-        }
-        return user;
-    }
-
-    @RequestMapping(value = "withdraw-user-balance", method = {RequestMethod.GET, RequestMethod.POST})
-    public User withdrawUserBalance(int balance, HttpServletRequest request){
-        String secret = LoginController.getSecretFromCookie(request);
-        User user = persist.loadUserBySecret(secret);
-        if (balance <= user.getBalance()){
-            user.setBalance(user.getBalance()-balance);
-            persist.save(user);
-        }
-        return user;
-    }
-
-    @RequestMapping(value = "/get-user-bet-history-forms", method = {RequestMethod.GET, RequestMethod.POST})
-    public List<BetsForm> getUserBetsForms(HttpServletRequest request){
-        String secret = LoginController.getSecretFromCookie(request);
-        User user = persist.loadUserBySecret(secret);
-        List<BetsForm> betsForms = persist.loadFormsByUser(user.getId());
-        List<BetsForm> filterForms = new ArrayList<>();
-        for (BetsForm form: betsForms) {
-            if (form.getRound()<LiveController.currentRound){
-                filterForms.add(form);
-            }
-        }
-        initForm(filterForms);
-
-        return filterForms;
-    }
-
-    @RequestMapping(value = "/get-user-bet-current-forms", method = {RequestMethod.GET, RequestMethod.POST})
-    public List<BetsForm> getUserBetsCurrentForms(HttpServletRequest request){
-        String secret = LoginController.getSecretFromCookie(request);
-        User user = persist.loadUserBySecret(secret);
-        List<BetsForm> betsForms = persist.loadFormsByUser(user.getId());
-        List<BetsForm> filterForms = new ArrayList<>();
-        for (BetsForm form: betsForms) {
-            if (form.getRound()==LiveController.currentRound){
-                filterForms.add(form);
-            }
-        }
-        initForm(filterForms);
-
-        return filterForms;
-    }
-
-    public void initForm(List<BetsForm>filterForms){
-        for (BetsForm form: filterForms) {
-            form.setBets(persist.loadBetsByForm(form.getId()));
-            for (int i = 0; i < form.getBets().size(); i++) {
-                Bet bet = (Bet) form.getBets().get(i);
-                bet.getMatch().setGoals(new ArrayList<>());
-                if (LiveController.currentRound > form.getRound()){
-                    bet.getMatch().setGoals(persist.loadMatchGoals(bet.getMatch().getId()));
-                }
-            }
-        }
-    }
 
 
 
@@ -130,36 +53,6 @@ public class GeneralController {
         return players;
     }
 
-    @RequestMapping(value = "/get-user-bet", method = {RequestMethod.GET, RequestMethod.POST})
-    public Object getUserBets(@RequestBody LinkedHashMap betForm){
-        User user = persist.loadUserBySecret((String) betForm.get("ownerSecret"));
-        int moneyBet =Integer.parseInt((String) betForm.get("moneyBet")) ;
-        BasicResponse basicResponse =null;
-        if (user.getBalance()>= moneyBet){
-            user.takeABet(moneyBet);
-            persist.save(user);
-            int round = (int) betForm.get("round");
-            BetsForm betsForm = new BetsForm(user,moneyBet,round);
-            persist.save(betsForm);
-            betsForm.setBets(new ArrayList<>());
-            ArrayList<LinkedHashMap> bets = (ArrayList<LinkedHashMap>) betForm.get("bets");
-            for (LinkedHashMap bet: bets) {
-                LinkedHashMap linkedMatch = (LinkedHashMap) bet.get("match");
-                Match match = persist.loadObject(Match.class,(int)linkedMatch.get("id"));
-                int userBet =(int) bet.get("userBet");
-                double ratio = Double.parseDouble((String) bet.get("ratio"));
-                Bet newBet = new Bet(betsForm,match,userBet,ratio);
-                persist.save(newBet);
-            }
-            basicResponse = new UserResponse(true,null,user);
-            return basicResponse;
-
-        }
-        basicResponse = new BasicResponse(false, Errors.NOT_ENOUGH_MONEY);
-
-        return basicResponse;
-    }
-
     @RequestMapping(value = "/get-top-scorer", method = {RequestMethod.GET, RequestMethod.POST})
     public List<Player> getTopScorer(){
         List<Player> players = persist.loadPlayersWithGoals();
@@ -172,7 +65,7 @@ public class GeneralController {
             }
         });
         List<Player> topScorer = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < Constants.MAX_TOP_SCORER_PLAYERS; i++) {
             if(i < players.size()){
                 topScorer.add(players.get(i));
             }
@@ -229,21 +122,21 @@ public class GeneralController {
                 goalsConceded += getTeamGoals(match,!home);
                 int result = match.winnerTeam();
                 switch (result){
-                    case 1:
+                    case Constants.HOME_TEAM_WINS:
                         if (home){
                             wins+=1;
                         }else {
                             losses+=1;
                         }
                         break;
-                    case 2:
+                    case Constants.AWAY_TEAM_WINS:
                         if (home){
                             losses+=1;
                         }else {
                             wins+=1;
                         }
                         break;
-                    case 0:
+                    case Constants.DRAW:
                         draws+=1;
                         break;
                     default:
@@ -251,14 +144,40 @@ public class GeneralController {
                 }
             }
         }
-        int points = (wins*3) + draws;
+        int points = (wins * Constants.POINTS_BY_WIN) + draws;
         TeamStatistics teamStatistics = new TeamStatistics(team.getId(),gamesPlayed,goalsScored,goalsConceded,wins,draws,losses,points);
         team.setTeamStatistics(teamStatistics);
     }
 
 
+    @RequestMapping(value = "/get-user-bet", method = {RequestMethod.GET, RequestMethod.POST})
+    public Object getUserBets(@RequestBody LinkedHashMap betForm){
+        User user = persist.loadUserBySecret((String) betForm.get("ownerSecret"));
+        int moneyBet =Integer.parseInt((String) betForm.get("moneyBet")) ;
+        BasicResponse basicResponse =null;
+        if (user.getBalance()>= moneyBet){
+            user.takeABet(moneyBet);
+            persist.save(user);
+            int round = (int) betForm.get("round");
+            BetsForm betsForm = new BetsForm(user,moneyBet,round);
+            persist.save(betsForm);
+            betsForm.setBets(new ArrayList<>());
+            ArrayList<LinkedHashMap> bets = (ArrayList<LinkedHashMap>) betForm.get("bets");
+            for (LinkedHashMap bet: bets) {
+                LinkedHashMap linkedMatch = (LinkedHashMap) bet.get("match");
+                Match match = persist.loadObject(Match.class,(int)linkedMatch.get("id"));
+                int userBet =(int) bet.get("userBet");
+                double ratio = Double.parseDouble((String) bet.get("ratio"));
+                Bet newBet = new Bet(betsForm,match,userBet,ratio);
+                persist.save(newBet);
+            }
+            basicResponse = new UserResponse(true,null,user);
+            return basicResponse;
 
+        }
+        basicResponse = new BasicResponse(false, Errors.NOT_ENOUGH_MONEY);
 
-
+        return basicResponse;
+    }
 
 }

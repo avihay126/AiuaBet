@@ -1,10 +1,9 @@
 package com.ashcollege.controllers;
 
-import com.ashcollege.Persist;
+import com.ashcollege.utils.Persist;
 import com.ashcollege.entities.User;
 import com.ashcollege.responses.BasicResponse;
 import com.ashcollege.responses.UserResponse;
-import com.ashcollege.utils.Constants;
 import com.ashcollege.utils.Errors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -31,12 +31,12 @@ public class User<T> {
         this.username =username;
         this.email = email;
         this.password = password;
-        this.balance = 200;
+        this.balance = Constants.JOINING_GIFT;
         this.betsForms = new ArrayList<>();
     }
 
     public static boolean isCorrectUsername(String username) {
-        return username.length() >= 5 && isFirstCharUppercase(username);
+        return username.length() >= Constants.USERNAME_MIN_LEN && isFirstCharUppercase(username);
     }
     public void takeABet(int moneyBet){
         this.setBalance(this.balance-moneyBet);
@@ -58,7 +58,7 @@ public class User<T> {
     }
 
     public static boolean isCorrectPassword(String password) {
-        return password.length() >= 8 && isFirstCharUppercase(password) && containsDigit(password);
+        return password.length() >= Constants.PASSWORD_MIN_LEN && isFirstCharUppercase(password) && containsDigit(password);
     }
 
     private static boolean isFirstCharUppercase(String str) {

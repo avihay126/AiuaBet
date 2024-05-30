@@ -1,6 +1,7 @@
 package com.ashcollege.entities;
 
 import com.ashcollege.MatchProbabilities;
+import com.ashcollege.utils.Constants;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
@@ -122,16 +123,16 @@ public class Match<T> {
         int[] teamsGoals = new int[2];
         for (Goal goal: this.goals) {
             if (goal.isHome()){
-                teamsGoals[0]+=1;
+                teamsGoals[Constants.HOME_TEAM_INDEX]+=1;
             }else {
-                teamsGoals[1]+=1;
+                teamsGoals[Constants.AWAY_TEAM_INDEX]+=1;
             }
         }
-        if (teamsGoals[0]>teamsGoals[1]){
-            return 1;
-        }else if (teamsGoals[1]>teamsGoals[0]){
-            return 2;
+        if (teamsGoals[Constants.HOME_TEAM_INDEX]>teamsGoals[Constants.AWAY_TEAM_INDEX]){
+            return Constants.HOME_TEAM_WINS;
+        }else if (teamsGoals[Constants.AWAY_TEAM_INDEX]>teamsGoals[Constants.HOME_TEAM_INDEX]){
+            return Constants.AWAY_TEAM_WINS;
         }
-        return 0;
+        return Constants.DRAW;
     }
 }
