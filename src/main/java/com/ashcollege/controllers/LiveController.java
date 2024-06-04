@@ -52,6 +52,9 @@ public class LiveController {
         startSeason();
         new Thread(()->{
             while (currentRound<= Constants.FINAL_ROUND){
+                new Thread(()->{
+                    updateUsersLive();
+                }).start();
                 try {
                     Thread.sleep(loopTime);
                     time += secondToAddOrDip;
@@ -64,43 +67,44 @@ public class LiveController {
                 if (this.time == 0 && !this.inGame){
                     startRound();
                 }
-                for (Goal goal:currentRoundGoals) {
-                    if (goal.getMinute() == this.time && this.inGame){
-                        for (Match match:matches) {
-                            if (goal.getMatch().getId()==match.getId()){
-                                int homeGoals = match.getHomeGoals().size();
-                                int awayGoals = match.getAwayGoals().size();
-                                if (goal.isHome()){
-                                    if (homeGoals == awayGoals){
-                                        takesTheLead(match.getHomeTeam(),match.getAwayTeam());
-                                    }else if (homeGoals + 1 == awayGoals){
-                                        getADraw(match.getHomeTeam(),match.getAwayTeam());
+                if(inGame){
+                    for (Goal goal:currentRoundGoals) {
+                        if (goal.getMinute() == this.time){
+                            for (Match match:matches) {
+                                if (goal.getMatch().getId()==match.getId()){
+                                    int homeGoals = match.getHomeGoals().size();
+                                    int awayGoals = match.getAwayGoals().size();
+                                    if (goal.isHome()){
+                                        if (homeGoals == awayGoals){
+                                            takesTheLead(match.getHomeTeam(),match.getAwayTeam());
+                                        }else if (homeGoals + 1 == awayGoals){
+                                            getADraw(match.getHomeTeam(),match.getAwayTeam());
+                                        }
+                                        updateGoal(match.getHomeTeam(),match.getAwayTeam());
+                                    }else {
+                                        if (homeGoals == awayGoals){
+                                            takesTheLead(match.getAwayTeam(),match.getHomeTeam());
+                                        }else if (awayGoals + 1 == homeGoals){
+                                            getADraw(match.getAwayTeam(),match.getHomeTeam());
+                                        }
+                                        updateGoal(match.getAwayTeam(),match.getHomeTeam());
                                     }
-                                    updateGoal(match.getHomeTeam(),match.getAwayTeam());
-                                }else {
-                                    if (homeGoals == awayGoals){
-                                        takesTheLead(match.getAwayTeam(),match.getHomeTeam());
-                                    }else if (awayGoals + 1 == homeGoals){
-                                        getADraw(match.getAwayTeam(),match.getHomeTeam());
-                                    }
-                                    updateGoal(match.getAwayTeam(),match.getHomeTeam());
+                                    persist.updateTeamPoints(match.getHomeTeam());
+                                    persist.updateTeamPoints(match.getAwayTeam());
+                                    match.addGoal(goal);
+                                    break;
                                 }
-                                persist.updateTeamPoints(match.getHomeTeam());
-                                persist.updateTeamPoints(match.getAwayTeam());
-                                match.addGoal(goal);
-                                break;
                             }
                         }
                     }
                 }
-                updateUsersLive();
+
+
             }
         }).start();
     }
 
-    public void endSeason(){
 
-    }
 
     @RequestMapping(value = "restart",method = {RequestMethod.POST,RequestMethod.GET})
     public void restartSeason(){
