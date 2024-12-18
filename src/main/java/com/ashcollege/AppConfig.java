@@ -24,9 +24,10 @@ public class AppConfig {
     @Bean
     public DataSource dataSource() throws Exception {
         ComboPooledDataSource dataSource = new ComboPooledDataSource();
-        dataSource.setDriverClass("com.mysql.jdbc.Driver");
+        dataSource.setDriverClass("com.mysql.cj.jdbc.Driver");
+
 //        dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/aiuabet?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf8");
-        dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/aiuabet?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true");
+        dataSource.setJdbcUrl("jdbc:mysql://db:3306/aiuabet?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true");
         dataSource.setUser(DB_USERNAME);
         dataSource.setPassword(DB_PASSWORD);
         dataSource.setMaxPoolSize(20);
@@ -41,7 +42,8 @@ public class AppConfig {
         LocalSessionFactoryBean sessionFactoryBean = new LocalSessionFactoryBean();
         sessionFactoryBean.setDataSource(dataSource());
         Properties hibernateProperties = new Properties();
-        hibernateProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
+        // hibernateProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
+        hibernateProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
         hibernateProperties.put("hibernate.hbm2ddl.auto", "update");
         hibernateProperties.put("hibernate.jdbc.batch_size", 50);
         hibernateProperties.put("hibernate.connection.characterEncoding", "utf8");
